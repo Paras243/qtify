@@ -5,7 +5,7 @@ import axios from "axios";
 import Navbar from "../../components/Navbar/Navbar";
 import { ReactComponent as LeftArrow } from "../../assets/images/LeftArrow.svg";
 import { ReactComponent as ShuffleIcon } from "../../assets/images/shuffleIcon.svg";
-import { ReactComponent as libraryIcon } from "../../../src/assets/images/libraryIcon.svg";
+import { ReactComponent as libraryIcon } from "../../assets/images/libraryIcon.svg";
 import styles from "./AlbumDetails.module.css";
 import CustomPagination from "../../components/Pagination/CustomPagination";
 import Footer from "../../components/Footer/Footer";
