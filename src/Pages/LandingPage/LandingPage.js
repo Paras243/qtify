@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import {
-    fetchTopAlbums,
-    fetchNewAlbums,
-    fetchAllSongs,
+	fetchTopAlbums,
+	fetchNewAlbums,
+	fetchAllSongs,
 } from "../../api/api.js";
+import { useState } from "react";
 import styles from "./LandingPage.module.css";
 import { Toaster } from "react-hot-toast";
 import { errorHandler } from "../../config/helper-methods";
@@ -15,132 +16,122 @@ import FilterTabs from "../../components/FilterTabs/FilterTabs.js";
 import CustomAccordion from "../../components/Accordion/CustomAccordion.js";
 import SearchBar from "../../components/Search/Search.js";
 import Footer from "../../components/Footer/Footer.js";
-import FeedBackModal from "../../components/Modals/FeedBackModal/FeedBackModal.js";
-import style from "../../components/Modals/FeedBackModal/FeedBackModal.module.css"
+
+//Accordion Data.(Sending as a props).
 
 function LandingPage() {
-    const [topAlbumData, setTopAlbumData] = useState([]);
-    const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
-    const [newAlbumData, setNewAlbumData] = useState([]);
-    const [allSongsData, setAllSongsData] = useState([]);
-    const [loadingState, setLoadingState] = useState({
-        topAlbum: true,
-        newAlbum: true,
-        allSongs: true,
-    });
+	const [topAlbumData, setTopAlbumData] = useState([]);
+	const [newAlbumData, setNewAlbumData] = useState([]);
+	const [allSongsData, setAllSongsData] = useState([]);
+	const [loadingState, setLoadingState] = useState({
+		topAlbum: true,
+		newAlbum: true,
+		allSongs: true,
+	});
 
-    const handleFeedbackClick = () => {
-        setIsFeedbackOpen(true);
-    };
+	const _manageLoadingState = (key = "", value = false) => {
+		setLoadingState((prev) => ({ ...prev, [key]: value }));
+	};
 
-    const _manageLoadingState = (key = "", value = false) => {
-        setLoadingState((prev) => ({ ...prev, [key]: value }));
-    };
+	const generateTopAlbumData = async () => {
+		try {
+			_manageLoadingState("topAlbum", true);
+			const data = await fetchTopAlbums();
+			setTopAlbumData(data);
+			_manageLoadingState("topAlbum", false);
+		} catch (error) {
+			_manageLoadingState("topAlbum", false);
+			errorHandler(error);
+		}
+	};
 
-    const generateTopAlbumData = async () => {
-        try {
-            _manageLoadingState("topAlbum", true);
-            const data = await fetchTopAlbums();
-            setTopAlbumData(data);
-            _manageLoadingState("topAlbum", false);
-        } catch (error) {
-            _manageLoadingState("topAlbum", false);
-            errorHandler(error);
-        }
-    };
+	const generateNewAlbumData = async () => {
+		try {
+			_manageLoadingState("newAlbum", true);
 
-    const generateNewAlbumData = async () => {
-        try {
-            _manageLoadingState("newAlbum", true);
-            const data = await fetchNewAlbums();
-            setNewAlbumData(data);
-            _manageLoadingState("newAlbum", false);
-        } catch (error) {
-            _manageLoadingState("newAlbum", false);
-            errorHandler(error);
-        }
-    };
+			const data = await fetchNewAlbums();
+			setNewAlbumData(data);
 
-    const generateAllSongsData = async () => {
-        try {
-            _manageLoadingState("allSongs", true);
-            const data = await fetchAllSongs();
-            setAllSongsData(data);
-            _manageLoadingState("allSongs", false);
-        } catch (error) {
-            _manageLoadingState("allSongs", false);
-            errorHandler(error);
-        }
-    };
+			_manageLoadingState("newAlbum", false);
+		} catch (error) {
+			_manageLoadingState("newAlbum", false);
+			errorHandler(error);
+		}
+	};
 
-    useEffect(() => {
-        generateTopAlbumData();
-        generateNewAlbumData();
-        generateAllSongsData();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+	const generateAllSongsData = async () => {
+		try {
+			_manageLoadingState("allSongs", true);
 
-    const dropdownData = topAlbumData?.concat(newAlbumData);
+			const data = await fetchAllSongs();
+			setAllSongsData(data);
 
-    return (
-        <>
-            <Toaster position="bottom-right" reverseOrder={false} />
-            <Navbar
-                data={dropdownData}
-                logo={true}
-                search={true}
-                feedback={true}
-                onFeedbackClick={handleFeedbackClick} // Pass the click handler here
-            />
-            <FeedBackModal
-                isOpen={isFeedbackOpen}
-                onDismiss={() => setIsFeedbackOpen(false)}
-            />
+			_manageLoadingState("allSongs", false);
+		} catch (error) {
+			_manageLoadingState("allSongs", false);
+			errorHandler(error);
+		}
+	};
 
-            <div className={styles.landingPageSearchWrapper}>
-                <SearchBar
-                    placeholder="Search an album of your choice"
-                    data={dropdownData}
-                />
-            </div>
+	useEffect(() => {
+		generateTopAlbumData();
+		generateNewAlbumData();
+		generateAllSongsData();
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, []);
 
-            <HeroSection />
-            <div className={styles.sectionWrapper}>
-                <Section
-                    title="Top Albums"
-                    data={topAlbumData}
-                    type="album"
-                    loadingState={loadingState.topAlbum}
-                />
-                <Section
-                    title="New Albums"
-                    data={newAlbumData}
-                    type="album"
-                    loadingState={loadingState.newAlbum}
-                />
-            </div>
-            <hr className={styles.line}></hr>
+	const dropdownData = topAlbumData?.concat(newAlbumData);
 
-            <div className={styles.filter_songs_wrapper}>
-                <div>
-                    <h3 className={styles.tabsTitle}>Songs</h3>
-                </div>
-                <FilterTabs data={allSongsData} loadingState={loadingState.allSongs} />
-            </div>
-            <hr className={styles.line}></hr>
-            <div className={styles.customAccordionWrapper}>
-                <h1 className={styles.accordionHeader}>FAQs</h1>
-                {accordionData?.length ? (
-                    accordionData.map((each, index) => {
-                        return <CustomAccordion key={index} data={each} />;
-                    })
-                ) : (
-                    <></>
-                )}
-            </div>
-            <Footer />
-        </>
-    );
+	return (
+		<>
+			<Toaster position="bottom-right" reverseOrder={false} />
+			<Navbar data={dropdownData} logo={true} search={true} feedback={true} />
+
+			<div className={styles.landingPageSearchWrapper}>
+				<SearchBar
+					placeholder="Search a album of your choice"
+					data={dropdownData}
+				/>
+			</div>
+
+			<HeroSection />
+			<div className={styles.sectionWrapper}>
+				<Section
+					title="Top Albums"
+					data={topAlbumData}
+					type="album"
+					loadingState={loadingState.topAlbum}
+				/>
+				<Section
+					title="New Albums"
+					data={newAlbumData}
+					type="album"
+					loadingState={loadingState.newAlbum}
+				/>
+			</div>
+			<hr className={styles.line}></hr>
+
+			<div className={styles.filter_songs_wrapper}>
+				<div>
+					<h3 className={styles.tabsTitle}>Songs</h3>
+				</div>
+				<FilterTabs data={allSongsData} loadingState={loadingState.allSongs} />
+			</div>
+			<hr className={styles.line}></hr>
+			<div className={styles.customAccordionWrapper}>
+				<h1 className={styles.accordionHeader}>FAQs</h1>
+
+				{accordionData?.length ? (
+					accordionData.map((each, index) => {
+						return <CustomAccordion key={index} data={each} />;
+					})
+				) : (
+					<></>
+				)}
+			</div>
+			<Footer />
+		</>
+	);
 }
 
 export default LandingPage;
